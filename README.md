@@ -25,13 +25,13 @@ Asterisk version 13.33.0
 
 Pour installer, rien de plus simple :
 
-`git clone https://github.com/tutosfaciles48/Confcall.git`
+`git clone https://github.com/romain-neil/confcall.git`
 
 Se placer dans le répertoire, puis faire : `composer install`
 
 Note : Cette commande demande que composer soit installé (https://getcomposer.org/download/)
 
-A noter : si vous n'utiliser pas apache comme serveur web, il sera nécessaire de mettre en place la réécriture d'url, comme indiqué [ici](https://symfony.com/doc/current/setup/web_server_configuration.html).
+À noter : si vous n'utiliser pas apache comme serveur web, il sera nécessaire de mettre en place la réécriture d'url, comme indiqué [ici](https://symfony.com/doc/current/setup/web_server_configuration.html).
 
 Actuellement, la dépendance qui gère la communication avec le serveur asterisk ne gérant pas le versioning, il est obligatoire de récupérer l'archive contenant la dépendance *phpagi* à l'adresse https://dl.tutosfaciles48.fr/confcall/d4rkstar_phpagi.zip.
 Une fois l'archive décompressée dans le dossier vendor/ à la racine, ne pas oublier de modifier le fichier vendor/d4rkstart/phpagi/phpagi-asmanager.php aux lignes 118 à 121 avec: l'adresse du serveur asterisk, l'utilisateur **autorisé** à se connecter, ainsi que sont mot de passe.
