@@ -1,0 +1,8 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+
+    globals:
+        address: '3 Boulevard de la République, 92000 Paris'
+        org_name: 'Company Name'
+        version: '1.2.1'
+        version_date: '17/07/2020'
