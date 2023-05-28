@@ -51,7 +51,7 @@ Afin d'adapter l'interface à votre organisation, il faut modifier certains fich
 
 La purge s'effectue via l'administration (bouton Purger) ou encore via une tâche cron qui doit exécute le script /cron.php
 
-ex: `* * * * * php /var/www/html/cron.php`
+ex: `0 0 * * * php /var/www/html/cron.php`
 
 ## Notes
 
