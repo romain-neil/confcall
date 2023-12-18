@@ -3,6 +3,7 @@ This file keep track of the changes.
 
 ## UNRELEASED
 
+# [1.2.0] - 2023-12-18
 ### CHANGED
 - Require at least php 8.3
 - Use the new symfony mailer library
