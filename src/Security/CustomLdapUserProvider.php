@@ -5,7 +5,6 @@ use InvalidArgumentException;
 use Symfony\Component\Ldap\Entry;
 use Symfony\Component\Ldap\Security\LdapUser;
 use Symfony\Component\Ldap\Security\LdapUserProvider;
-use Symfony\Component\Security\Core\User\UserInterface;
 use function count;
 
 class CustomLdapUserProvider extends LdapUserProvider {
