@@ -97,7 +97,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "5.4.*"
+            "require": "6.4.*"
         }
     },
     "name": "romain-neil/confcall",

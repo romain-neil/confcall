@@ -4,7 +4,6 @@ namespace App\Controller;
 use App\Service\AsteriskApi;
 use DateTime;
 use Exception;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 use Spipu\Html2Pdf\Exception\Html2PdfException;
 use Spipu\Html2Pdf\Html2Pdf;
@@ -22,10 +21,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController {
 
 	/**
-	 * @Route("/", name="app_index")
 	 * @return Response
-	 * @IsGranted("ROLE_USER")
 	 */
+	#[Route('/', name: 'app_index')]
+	#[IsGranted('ROLE_USER')]
 	public function index(): Response {
 		return $this->render("index.html.twig", [
 			"calls" => AsteriskApi::getConfList()
@@ -33,10 +32,10 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/admin", name="admin")
-	 * @IsGranted("ROLE_ADMIN")
 	 * @return Response
 	 */
+	#[Route('/admin', name: 'admin')]
+	#[IsGranted('ROLE_ADMIN')]
 	public function admin(): Response {
 		return $this->render("admin.html.twig", [
 			"calls" => AsteriskApi::getConfList(),
@@ -47,10 +46,10 @@ class HomeController extends AbstractController {
 	/**
 	 * Tâche cron qui est appelée en ajax depuis l'administration
 	 *
-	 * @Route("/cron", name="cron")
-	 * @IsGranted("ROLE_ADMIN")
 	 * @return Response
 	 */
+	#[Route('/cron', name: 'cron')]
+	#[IsGranted('ROLE_ADMIN')]
 	public function cron(): Response {
 		AsteriskApi::cron();
 
@@ -58,12 +57,12 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/create", name="create")
 	 * @param Request $req
 	 * @return Response
-	 * @IsGranted("ROLE_USER")
 	 * @throws Exception
 	 */
+	#[Route('/create', name: 'create')]
+	#[IsGranted('ROLE_USER')]
 	public function create(Request $req): Response {
 		$user = $this->getUser();
 		$date = new DateTime($req->query->get('d'));
@@ -85,11 +84,11 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/del/{id}", name="del_conf")
-	 * @IsGranted("ROLE_USER")
 	 * @param $id
 	 * @return RedirectResponse
 	 */
+	#[Route('/del/{id}', name: 'del_conf')]
+	#[IsGranted('ROLE_USER')]
 	public function deleteConf($id): RedirectResponse {
 		AsteriskAPI::deleteConference($id);
 
@@ -97,10 +96,9 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/pdf", name="gen_pdf")
-	 * @IsGranted("ROLE_USER")
 	 * @param Request $request
-	 * @return RedirectResponse|Response
+	 * @param MailerInterface $mailer
+	 * @return Response
 	 * @throws Html2PdfException
 	 */
 	public function genPdf(Request $request) {
