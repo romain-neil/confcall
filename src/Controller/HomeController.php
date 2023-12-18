@@ -4,28 +4,29 @@ namespace App\Controller;
 use App\Service\AsteriskApi;
 use DateTime;
 use Exception;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 use Spipu\Html2Pdf\Exception\Html2PdfException;
 use Spipu\Html2Pdf\Html2Pdf;
-use Swift_Attachment;
-use Swift_Mailer;
-use Swift_Message;
-use Swift_Mime_SimpleMessage;
-use Swift_SmtpTransport;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Ldap\Security\LdapUser;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Part\DataPart;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class HomeController extends AbstractController {
 
 	/**
-	 * @Route("/", name="app_index")
 	 * @return Response
-	 * @IsGranted("ROLE_USER")
 	 */
+	#[Route('/', name: 'app_index')]
+	#[IsGranted('ROLE_USER')]
 	public function index(): Response {
 		return $this->render("index.html.twig", [
 			"calls" => AsteriskApi::getConfList()
@@ -33,10 +34,10 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/admin", name="admin")
-	 * @IsGranted("ROLE_ADMIN")
 	 * @return Response
 	 */
+	#[Route('/admin', name: 'admin')]
+	#[IsGranted('ROLE_ADMIN')]
 	public function admin(): Response {
 		return $this->render("admin.html.twig", [
 			"calls" => AsteriskApi::getConfList(),
@@ -47,10 +48,10 @@ class HomeController extends AbstractController {
 	/**
 	 * Tâche cron qui est appelée en ajax depuis l'administration
 	 *
-	 * @Route("/cron", name="cron")
-	 * @IsGranted("ROLE_ADMIN")
 	 * @return Response
 	 */
+	#[Route('/cron', name: 'cron')]
+	#[IsGranted('ROLE_ADMIN')]
 	public function cron(): Response {
 		AsteriskApi::cron();
 
@@ -58,12 +59,12 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/create", name="create")
 	 * @param Request $req
 	 * @return Response
-	 * @IsGranted("ROLE_USER")
 	 * @throws Exception
 	 */
+	#[Route('/create', name: 'create')]
+	#[IsGranted('ROLE_USER')]
 	public function create(Request $req): Response {
 		$user = $this->getUser();
 		$date = new DateTime($req->query->get('d'));
@@ -85,11 +86,11 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/del/{id}", name="del_conf")
-	 * @IsGranted("ROLE_USER")
 	 * @param $id
 	 * @return RedirectResponse
 	 */
+	#[Route('/del/{id}', name: 'del_conf')]
+	#[IsGranted('ROLE_USER')]
 	public function deleteConf($id): RedirectResponse {
 		AsteriskAPI::deleteConference($id);
 
@@ -97,14 +98,16 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @Route("/pdf", name="gen_pdf")
-	 * @IsGranted("ROLE_USER")
 	 * @param Request $request
-	 * @return RedirectResponse|Response
+	 * @param MailerInterface $mailer
+	 * @return Response
 	 * @throws Html2PdfException
+	 * @throws TransportExceptionInterface
 	 */
-	public function genPdf(Request $request) {
-		/** @var \Symfony\Component\Ldap\Security\LdapUser $user */
+	#[Route('/pdf', name: 'gen_pdf')]
+	#[IsGranted('ROLE_USER')]
+	public function genPdf(Request $request, MailerInterface $mailer): Response {
+		/** @var LdapUser $user */
 		$user = $this->getUser();
 
 		$id = $request->query->get('id');
@@ -127,35 +130,26 @@ class HomeController extends AbstractController {
 		);
 
 		if($shouldSendMail) {
-			$transport = new Swift_SmtpTransport("ip_serveur_smtp", 25); // ip/url ; port
+			$invit = $pdf->output('', 'S');
 
-			//Attention: ne pas supprimer les 2 prochaines lignes
-			$transport->setUsername(""); //Mettre ici l'utilisateur smtp
-			$transport->setPassword(""); //Mettre ici le mot de passe de l'utilisateur
-
-			$mailer = new Swift_Mailer($transport);
-
-			$attachment = new Swift_Attachment($pdf->output('', 'S'), "invitation_$id.pdf", "application/pdf");
-
-			$message = (new Swift_Message())
-				->setSubject("Fiche récapitulative audio conférence")
-				->setFrom("no-reply@company.com", "ne-pas-repondre")
-				->setTo($user->getEntry()->getAttribute('mail'))
-				->setBody($this->renderView('emails/invitation.html.twig'))
-				->setContentType('text/html')
-				->setPriority(Swift_Mime_SimpleMessage::PRIORITY_HIGH)
-				->attach($attachment)
-			;
+			$email = (new TemplatedEmail())
+				->subject("Fiche récapitulative audio conférence")
+				->from("no-reply@company.com", "ne-pas-repondre")
+				->to($user->getEntry()->getAttribute('mail'))
+				->htmlTemplate('emails/invitation.html.twig')
+				->priority(Email::PRIORITY_HIGH)
+				->addPart(new DataPart($invit, "invitation_$id.pdf"))
+				;
 
 			//On a plusieurs messages à envoyer
 			if($addresses !== false && $addresses !== "") {
-				$message->setFrom($user->getExtraFields()["mail"]);
+				$email->from($user->getExtraFields()["mail"]);
 				$addresses = explode(";", urldecode($addresses));
 
 				foreach($addresses as $addr) {
 					if($addr !== '') {
-						$message->setTo($addr);
-						$mailer->send($message);
+						$email->to($addr);
+						$mailer->send($email);
 					}
 				}
 
@@ -164,7 +158,7 @@ class HomeController extends AbstractController {
 					'La fiche récapitulative a bien été envoyée aux utilisateurs'
 				);
 			} else {
-				$mailer->send($message);
+				$mailer->send($email);
 
 				$this->addFlash(
 					'success',
