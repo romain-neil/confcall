@@ -34,7 +34,7 @@ class CustomLdapUserProvider extends LdapUserProvider {
 			$extraFields[$field] = $this->getAttributeValue($entry, $field);
 		}
 
-		if (strpos($entry->getDn(), "01-Service Informatique") !== false) {
+		if (str_contains($entry->getDn(), "01-Service Informatique")) {
 			$roles[] = "ROLE_ADMIN";
 		}
 
