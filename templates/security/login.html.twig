@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('assets/css/form.css') }}">
+{% endblock %}
+
+{% block body %}
+	<div class="wrapper">
+		<div id="formContent">
+
+			<!-- Icon -->
+			<div>
+				<img src="{{ asset('assets/img/logo.jpg') }}" id="icon" alt="Logo centre hospitalier" />
+			</div>
+
+			<!-- Login Form -->
+			<form method="post">
+				<input type="text" value="{{ last_username }}" id="login" name="username" placeholder="Nom d'utilisateur" required autofocus>
+
+				<input type="password" id="password"  name="password" placeholder="Mot de passe" required>
+
+				<div class="checkbox mb-3">
+					<label>
+						<input type="checkbox" name="_remember_me" checked> Se souvenir de moi
+					</label>
+				</div>
+
+				<input type="hidden" name="_csrf_token"
+					   value="{{ csrf_token('authenticate') }}"
+				>
+
+				<input type="submit"  value="Se connecter">
+
+				{% if error %}
+					<div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+				{% endif %}
+			</form>
+
+			<div id="formFooter">
+				<p>Bonjour, connectez-vous avec vos identifiants <b>Windows</b></p>
+			</div>
+
+		</div>
+	</div>
+	<div class="btm">
+		<p>Version {{ version }} du {{ version_date }}</p>
+	</div>
+{% endblock %}

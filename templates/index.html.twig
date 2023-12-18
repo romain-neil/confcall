@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">Utilisateur {{ app.user.username }}</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					{% if is_granted('ROLE_ADMIN') %}
+					<li><a href="{{ path('admin') }}">Administration</a></li>
+					{% endif %}
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-3 col-md-2 sidebar">
+				<img src="{{ asset('assets/img/logo.jpg') }}" class="logo" alt="Logo du centre hospitalier">
+				<ul class="nav nav-sidebar">
+					<li class="active"><a href="#">Vue globale <span class="sr-only">(current)</span></a></li>
+				</ul>
+				<p>Bonjour {{ app.user.extraFields.givenName }} {{ app.user.extraFields.sn }}</p>
+				<p><a href="{{ path('app_logout') }}" class="btn btn-danger logout-btn">Se déconnecter</a></p>
+				<div class="btm">
+					<p>{{ org_name }}</p>
+					<p>Version {{ version }} du {{ version_date }}</p>
+				</div>
+			</div>
+			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<h1 class="page-header">Tableau de bord</h1>
+
+				<h2 class="sub-header">Conférences planifiées</h2>
+				<div class="table-responsive">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Numéro</th>
+								<th>Code d'accès</th>
+								<th>Date</th>
+								<th>Heure de début</th>
+								<th>Heure de fin</th>
+								<th>Durée</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for call in calls %}
+								{% if call.user == app.user.username %}
+									{% set diff = date(call.end).diff(date(call.start))  %}
+									<tr>
+										<td>{{ call.id }}</td>
+										<td>{{ call.pin }}</td>
+										<td>
+											{% if (call.creation is null) %}
+												Aujourd'hui
+											{% else %}
+												{{ call.start|date("d-m-Y") }}
+											{% endif %}
+										</td>
+										<td>{{ call.start|date("H:i")}}</td>
+										<td>{{ call.end|date("H:i")}}</td>
+										<td>{{ diff.h }}:{{ "%02d"|format(diff.i) }}</td>
+										<td>
+											<a href="{{ path('del_conf', {"id": call.id} ) }}">Supprimer</a> &nbsp; <a href="{{ path('gen_pdf', {"id": call.id, "pin": call.pin, "start": call.start|url_encode, "end": call.end|url_encode}) }}"><i class="far fa-file-pdf"></i> Générer l'invitation</a>
+											{% if app.user.extraFields.mail %}
+												&nbsp;
+												<a href="{{ path('gen_pdf', {"id": call.id, "pin": call.pin, "start": call.start|url_encode, "end": call.end|url_encode, 'sendMail': true}) }}"><i class="far fa-envelope"></i> Envoyer par mail</a>
+											{% endif %}
+											&nbsp;
+											<a href="#" onclick="setConf({{ call.id }}, '{{ call.start|url_encode }}', '{{ call.end|url_encode }}', {{ call.pin }})"><i class="far fa-envelope"></i> Envoyer à plusieurs destinataires</a>
+										</td>
+									</tr>
+								{% endif %}
+							{% endfor %}
+						</tbody>
+					</table>
+					<div id="form-mail" style="display: none">
+						<button onclick="showHelp()"><i class="fas fa-info-circle"></i></button>
+						<form>
+							<div class="form-group">
+								<label>Adresses: <input type="text" id="adresses" name="addr" size="60" value="" data-intro="Retrouvez ici la liste des personnes à qui envoyer le mail" data-step="4" /></label>
+
+							</div>
+							<div class="form-group">
+								<label>Rechercher une personne : <input type="search" id="srch" width="30" data-intro="Entrez ici le nom ou le prénom de la personne que vous souhaitez rechercher" data-step="1" /></label>
+								<p class="btn btn-primary" onclick="onSearchBtnClick()" data-intro="Cliquez ensuite sur ce bouton pour effectuer une recherche. Seule les personnes avec une adresse mail sont affichées" data-step="2" >Rechercher la personne</p>
+							</div>
+							<div class="form-group">
+								<select id="results" onchange="addPerson(this.options[this.selectedIndex], this.selectedIndex)" data-intro="Sélectionnez ensuite la personne à ajouter ici" data-step="3"></select>
+							</div>
+							<div class="form-group">
+								<p class="btn btn-primary" onclick="sendForm()">Envoyer la fiche récapitulative aux personnes sélectionnées</p>
+							</div>
+						</form>
+					</div>
+					<p><a href="#" onclick="document.location.reload()">Rafraichir la liste</a></p>
+				</div>
+				<h2 class="sub-header">Planifier une nouvelle conférence</h2>
+				<form>
+					<div class="form-group row">
+						<label for="date" class="col-sm-2 col-form-label">Début de la conférence :</label>
+						<div class="col-sm-4">
+							<input id="date" type="date" class="form-control" onchange="verifyDate()" required>
+						</div>
+						<div class="col-sm-4">
+							<p class="err-date">La date ne doit pas être dans le passé</p>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label for="start" class="col-sm-2 col-form-label">Heure de début :</label>
+						<div class="col-sm-4">
+							<input id="start" type="time" class="form-control" required>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label for="end" class="col-sm-2 col-form-label">Heure de fin :</label>
+						<div class="col-sm-4">
+							<input id="end" type="time" class="form-control" required>
+						</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-sm-4">
+							<p class="btn btn-primary" onclick="create_conf()">Valider votre planification</p>
+						</div>
+					</div>
+				</form>
+				<div class="alert alert-info">
+					<h4 class="alert-heading"><b>Attention</b></h4>
+					<p>Les conférences à terme échue seront automatiquement supprimées le jour suivant.</p>
+				</div>
+
+				<div class="alert alert-info">
+					<p>Pour appeler le serveur de conférence, merci de composer :</p>
+					<ul style="list-style-type: '-'">
+						<li>&nbsp;le XX XX XX XX XX depuis ...</li>
+						<li>&nbsp;le XX XX XX XX XX depuis ...</li>
+						<li>&nbsp;le XX XX XX XX XX depuis ...</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script src="https://kit.fontawesome.com/a88882c5e9.js" crossorigin="anonymous"></script>
+	<script src="{{ asset('assets/js/intro.min.js') }}"></script>
+	<script src="{{ asset('assets/js/create.js') }}"></script>
+	<script src="{{ asset('assets/js/mail.js') }}"></script>
+	<script src="{{ asset('assets/js/date-input-polyfill.dist.js') }}"></script>
+	<script src="{{ asset('assets/js/dashboard.js') }}"></script>
+{% endblock %}

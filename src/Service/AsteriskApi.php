@@ -9,7 +9,10 @@ class AsteriskApi {
 	public static string $ASTERISK_DEL_CMD = 'database del conf ';
 	public static string $ASTERISK_ADD_CMD = 'database put conf ';
 
-	public static function cron() {
+	/**
+	 * @return void
+	 */
+	public static function cron(): void {
 		$today = date('d-m-Y G:i:s');
 
 		foreach(AsteriskAPI::getConfList() as $call) {
@@ -23,7 +26,7 @@ class AsteriskApi {
 	 * Delete a conference by his id
 	 * @param $id string|int The conference ID to delete
 	 */
-	public static function deleteConference($id) {
+	public static function deleteConference($id): void {
 		$asm = new AGI_AsteriskManager();
 
 		if($asm->connect()) {
