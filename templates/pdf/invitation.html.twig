@@ -1,0 +1,42 @@
+<page>
+	<style type="text/css">
+		page {
+			max-width: 100%;
+		}
+		img {
+			position: absolute;
+			top: 50px;
+			left: 230px;
+		}
+		p {
+			text-align: justify;
+			padding-left: 30px;
+			padding-right: 30px;
+		}
+	</style>
+	<page_header>
+		<img src="/var/www/html/public/assets/img/logo.jpg" alt=""/>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<p>Bonjour,</p>
+		<p>Une conférence téléphonique a été planifiée par <b>{{ app.user.extraFields.givenName }} {{ app.user.extraFields.sn }}</b> entre <b>{{ start }}</b> et <b>{{ end }}</b> le <b>{{ d }}</b>.</p>
+		<p>
+			Elle sera accessible par téléphone au :
+			<ul style="list-style-type: '-'">
+				<li>&nbsp;XX XX XX depuis l'entreprise</li>
+				<li>&nbsp;XX XX XX XX XX depuis l'extérieur</li>
+			</ul>
+		</p>
+		<p>Votre audioconférence porte le numéro : « <b>{{ num }}</b> » avec le code d’acces : « <b>{{ pin }}</b> »</p>
+	</page_header>
+	<page_footer>
+		<p style="text-align: center">
+			Entreprise XYZ, Adresse
+		</p>
+	</page_footer>
+</page>
