@@ -13,7 +13,7 @@ class AdminController extends AbstractController {
 
 	#[Route('/', name: 'home')]
 	public function home(): Response {
-		return $this->render("admin.html.twig", [
+		return $this->render('admin/home.html.twig', [
 			"calls" => AsteriskApi::getConfList(),
 			"confs" => AsteriskApi::getCurrentConfs()
 		]);
