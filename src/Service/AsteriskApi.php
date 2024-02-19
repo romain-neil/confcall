@@ -9,6 +9,9 @@ class AsteriskApi {
 	public static string $ASTERISK_DEL_CMD = 'database del conf ';
 	public static string $ASTERISK_ADD_CMD = 'database put conf ';
 
+	public static string $ASTERISK_USERS_FILE = '/etc/asterisk/pjsip.conf';
+	public static string $ASTERISK_USERS_HEADER = '; ### [USERS LIST] ###';
+
 	/**
 	 * @return void
 	 */
@@ -192,6 +195,51 @@ class AsteriskApi {
 		}
 
 		return [];
+	}
+
+	/**
+	 * Read the asterisk user files, then return an array of users (id, username)
+	 */
+	public static function listUsers(): array {
+		$file = new \SplFileObject(self::$ASTERISK_USERS_FILE);
+		$users = [];
+		$i = 0;
+
+		foreach($file as $line) {
+			if (!str_contains($line, self::$ASTERISK_USERS_HEADER)) {
+				$i++;
+			} else {
+				//Reach begin of users definition
+				break;
+			}
+		}
+
+		$iterator = new \LimitIterator($file, $i);
+		$j = 0;
+		foreach ($iterator as $line) {
+			$ln = trim($line);
+
+			// Extract user id
+			if (str_starts_with($ln, '[') && preg_match('/\[([0-9]+)\]/', $ln, $matches)) {
+				$userId = $matches[1];
+
+				// Verify if user already parsed
+				if (empty($users[$userId])) {
+					$users[$userId] = [];
+				}
+			}
+
+			// Get interesting lines
+			if (str_contains($ln, '=')) {
+				$explodedLine = explode('=', $line);
+
+				if ($explodedLine[0] === 'username') {
+					$users[$userId] = trim($explodedLine[1]);
+				}
+			}
+		}
+
+		return $users;
 	}
 
 }
