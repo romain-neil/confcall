@@ -34,18 +34,6 @@ class HomeController extends AbstractController {
 	}
 
 	/**
-	 * @return Response
-	 */
-	#[Route('/admin', name: 'admin')]
-	#[IsGranted('ROLE_ADMIN')]
-	public function admin(): Response {
-		return $this->render("admin.html.twig", [
-			"calls" => AsteriskApi::getConfList(),
-			"confs" => AsteriskApi::getCurrentConfs()
-		]);
-	}
-
-	/**
 	 * Tâche cron qui est appelée en ajax depuis l'administration
 	 *
 	 * @return Response

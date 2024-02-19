@@ -53,6 +53,12 @@ La purge s'effectue via l'administration (bouton Purger) ou encore via une tâch
 
 ex: `0 0 * * * php /var/www/html/cron.php`
 
+## Liste des utilisateurs
+
+Pour pouvoir gérer les utilisateurs, il faut spécifier quelques paramètres dans le fichier `src/Service/AsteriskAPI.php` :
+- ASTERISK_USER_FILE : emplacement du fichier contenant la liste des utilisateurs
+- ASTERISK_USERS_HEADER : texte à partir duquel le logiciel va parser la liste des utilisateurs (défaut à `; ### [USERS LIST] ###`)
+
 ## Notes
 
 Afin de prévenir la suppression des modifications effectuées au niveau des variables globales, il pourra être nécessaire de modifier ces valeurs dans les fichiers suivantes:
