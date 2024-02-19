@@ -19,4 +19,11 @@ class AdminController extends AbstractController {
 		]);
 	}
 
+	#[Route('/users', name: 'list_users')]
+	public function listUsers(): Response {
+		$users = AsteriskApi::listUsers();
+
+		return $this->render('admin/users.html.twig', ['users' => $users]);
+	}
+
 }
