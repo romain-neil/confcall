@@ -1,0 +1,28 @@
+{% extends 'admin/_menu.html.twig' %}
+
+{% block container %}
+    <h1 class="page-header">Liste des utilisateurs</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Identifiant</th>
+                    <th>Nom d'utilisateur</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users is empty %}
+                    <p>Aucun utilisateur</p>
+                {% else %}
+                    {% for k, user in users %}
+                        <tr>
+                            <td>{{ k }}</td>
+                            <td>{{ user.name }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

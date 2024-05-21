@@ -3,6 +3,12 @@ This file keep track of the changes.
 
 ## UNRELEASED
 
+### CHANGED
+- Extraction de la page d'administration dans un controller spécifique
+
+### ADDED
+- Récupération de la liste des utilisateurs
+
 # [1.2.0] - 2023-12-18
 ### CHANGED
 - Require at least php 8.3
